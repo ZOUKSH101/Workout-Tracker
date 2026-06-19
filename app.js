@@ -5826,6 +5826,9 @@ function FlightDeckV2() {
   // Persistence — versioned with migration, corrupt-parse safe
   const [savedWorkouts, setSavedWorkouts] = useState([]);
   const [inbodyInterval, setInbodyInterval] = useState(INBODY_INTERVAL_DEFAULT);
+  const [userInbody, setUserInbody] = useState([]);
+  const [scanFormOpen, setScanFormOpen] = useState(false);
+  const [scanForm, setScanForm] = useState({ d: '', wt: '', smm: '', bfm: '', pbf: '', bmi: '', score: '', bmr: '' });
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     (async () => {
@@ -5847,6 +5850,13 @@ function FlightDeckV2() {
         if (ivRaw !== null) {
           try {
             interval = JSON.parse(ivRaw);
+          } catch (e) {}
+        }
+        let uInbody = [];
+        const ibRaw = await STORE.get('zsk4-inbody');
+        if (ibRaw !== null) {
+          try {
+            uInbody = JSON.parse(ibRaw);
           } catch (e) {}
         }
 
@@ -5871,6 +5881,7 @@ function FlightDeckV2() {
         }
         setSavedWorkouts(workouts);
         setInbodyInterval(interval);
+        setUserInbody(uInbody);
       } catch (e) {/* first launch, no data */}
       setLoaded(true);
     })();
@@ -5882,6 +5893,11 @@ function FlightDeckV2() {
   const updateScanInterval = async n => {
     setInbodyInterval(n);
     await STORE.set('zsk4-inbody-interval', JSON.stringify(n));
+  };
+  const addInbodyScan = async scan => {
+    const updated = [...userInbody, scan];
+    setUserInbody(updated);
+    await STORE.set('zsk4-inbody', JSON.stringify(updated));
   };
 
   // Export / import backup — always stamped with DATA_VERSION
@@ -5931,7 +5947,8 @@ function FlightDeckV2() {
 
   // InBody scheduling
   const inbodySchedule = useMemo(() => {
-    const last = INBODY[INBODY.length - 1].d;
+    const merged = [...INBODY, ...userInbody].sort((a, b) => a.d.localeCompare(b.d));
+    const last = merged[merged.length - 1].d;
     const due = addDays(last, inbodyInterval);
     const daysLeft = daysBetween(todayISO(), due);
     const sinceLastScan = daysBetween(last, todayISO());
@@ -5943,7 +5960,7 @@ function FlightDeckV2() {
       overdue: daysLeft < 0,
       dueSoon: daysLeft >= 0 && daysLeft <= 5
     };
-  }, [inbodyInterval]);
+  }, [inbodyInterval, userInbody]);
 
   // Live clock for timers
   const [now, setNow] = useState(Date.now());
@@ -6216,7 +6233,7 @@ function FlightDeckV2() {
       color: C.dimmer,
       opacity: 0.6
     }
-  }, "v2.6.2")), !inWorkout && /*#__PURE__*/React.createElement("div", {
+  }, "v2.6.3")), !inWorkout && /*#__PURE__*/React.createElement("div", {
     onClick: () => caution.go && setNav(caution.go),
     style: {
       margin: '0 18px 16px',
@@ -7091,7 +7108,7 @@ function FlightDeckV2() {
         top: 'calc(100% + 6px)',
         left: 0,
         right: 0,
-        zIndex: 20,
+        zIndex: 60,
         background: C.bg2,
         border: `1px solid ${C.strokeHi}`,
         borderRadius: 12,
@@ -8125,23 +8142,23 @@ function FlightDeckV2() {
       }, "e1RM ", topSet.e1rm)))));
     })());
   })(), nav === 'body' && (() => {
-    const latest = INBODY[INBODY.length - 1],
-      first = INBODY[0];
+    const allScans = [...INBODY, ...userInbody].sort((a, b) => a.d.localeCompare(b.d));
+    const latest = allScans[allScans.length - 1],
+      first = allScans[0];
     const smmD = +(latest.smm - first.smm).toFixed(1);
     const anomDates = new Set(data.bodyAnomalies.map(a => a.d));
-    // Build combined series with a gap marker: insert null between the 2023→2024 jump
-    const GAP_THRESH = 180; // days
+    const GAP_THRESH = 180;
     const actual = [];
     let gapBand = null;
-    for (let i = 0; i < INBODY.length; i++) {
+    for (let i = 0; i < allScans.length; i++) {
       if (i > 0) {
-        const g = Math.round((new Date(INBODY[i].d) - new Date(INBODY[i - 1].d)) / 86400000);
+        const g = Math.round((new Date(allScans[i].d) - new Date(allScans[i - 1].d)) / 86400000);
         if (g >= GAP_THRESH) gapBand = {
-          x1: INBODY[i - 1].d,
-          x2: INBODY[i].d
+          x1: allScans[i - 1].d,
+          x2: allScans[i].d
         };
       }
-      actual.push(INBODY[i]);
+      actual.push(allScans[i]);
     }
     return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Card, {
       style: {
@@ -8277,7 +8294,86 @@ function FlightDeckV2() {
           cursor: 'pointer'
         }
       }, d / 7 | 0, "w"))));
-    })(), data.bodyAnomalies.length > 0 && /*#__PURE__*/React.createElement("div", {
+    })(), /*#__PURE__*/React.createElement("div", {
+      style: { marginBottom: 16 }
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => setScanFormOpen(!scanFormOpen),
+      style: {
+        width: '100%',
+        padding: '12px 0',
+        borderRadius: 12,
+        background: scanFormOpen ? C.glass : C.accent,
+        border: `1px solid ${scanFormOpen ? C.stroke : 'transparent'}`,
+        color: scanFormOpen ? C.dim : '#fff',
+        fontFamily: F,
+        fontSize: 13,
+        fontWeight: 700,
+        cursor: 'pointer'
+      }
+    }, scanFormOpen ? "Cancel" : "+ Log InBody Scan"), scanFormOpen && /*#__PURE__*/React.createElement(Card, {
+      style: { padding: 16, marginTop: 10 }
+    }, [
+      { key: 'd', label: 'Date', type: 'date', placeholder: 'YYYY-MM-DD' },
+      { key: 'wt', label: 'Weight (kg)', type: 'number' },
+      { key: 'smm', label: 'SMM (kg)', type: 'number' },
+      { key: 'bfm', label: 'BFM (kg)', type: 'number' },
+      { key: 'pbf', label: 'PBF (%)', type: 'number' },
+      { key: 'bmi', label: 'BMI', type: 'number' },
+      { key: 'score', label: 'Score', type: 'number' },
+      { key: 'bmr', label: 'BMR', type: 'number' }
+    ].map(f => /*#__PURE__*/React.createElement("div", {
+      key: f.key,
+      style: { marginBottom: 10 }
+    }, /*#__PURE__*/React.createElement("label", {
+      style: { fontFamily: MONO, fontSize: 10, color: C.dim, display: 'block', marginBottom: 4 }
+    }, f.label), /*#__PURE__*/React.createElement("input", {
+      type: f.type === 'date' ? 'date' : 'number',
+      step: f.type === 'number' ? '0.1' : undefined,
+      value: scanForm[f.key],
+      onChange: e => setScanForm(p => ({ ...p, [f.key]: e.target.value })),
+      style: {
+        width: '100%',
+        background: C.bg2,
+        color: C.text,
+        border: `1px solid ${C.stroke}`,
+        borderRadius: 9,
+        padding: '10px 12px',
+        fontFamily: MONO,
+        fontSize: 13,
+        outline: 'none',
+        boxSizing: 'border-box'
+      }
+    }))), /*#__PURE__*/React.createElement("button", {
+      onClick: async () => {
+        if (!scanForm.d || !scanForm.wt || !scanForm.smm) return;
+        const scan = {
+          d: scanForm.d,
+          wt: parseFloat(scanForm.wt),
+          smm: parseFloat(scanForm.smm),
+          bfm: parseFloat(scanForm.bfm) || 0,
+          pbf: parseFloat(scanForm.pbf) || 0,
+          bmi: parseFloat(scanForm.bmi) || 0,
+          score: scanForm.score ? parseInt(scanForm.score) : null,
+          bmr: scanForm.bmr ? parseInt(scanForm.bmr) : null
+        };
+        await addInbodyScan(scan);
+        setScanForm({ d: '', wt: '', smm: '', bfm: '', pbf: '', bmi: '', score: '', bmr: '' });
+        setScanFormOpen(false);
+      },
+      style: {
+        width: '100%',
+        padding: '12px 0',
+        borderRadius: 12,
+        marginTop: 6,
+        background: (!scanForm.d || !scanForm.wt || !scanForm.smm) ? C.glass : C.up,
+        border: 'none',
+        color: (!scanForm.d || !scanForm.wt || !scanForm.smm) ? C.dim : '#fff',
+        fontFamily: F,
+        fontSize: 13,
+        fontWeight: 700,
+        cursor: 'pointer'
+      }
+    }, "Save Scan"))), data.bodyAnomalies.length > 0 && /*#__PURE__*/React.createElement("div", {
       style: {
         marginBottom: 16
       }
@@ -8474,7 +8570,7 @@ function FlightDeckV2() {
       width: "100%",
       height: "100%"
     }, /*#__PURE__*/React.createElement(LineChart, {
-      data: INBODY,
+      data: allScans,
       margin: {
         top: 5,
         right: 8,
@@ -8557,8 +8653,8 @@ function FlightDeckV2() {
         padding: '4px 0',
         overflow: 'hidden'
       }
-    }, [...INBODY].reverse().map((s, i) => {
-      const prev = i < INBODY.length - 1 ? [...INBODY].reverse()[i + 1] : null;
+    }, [...allScans].reverse().map((s, i) => {
+      const prev = i < allScans.length - 1 ? [...allScans].reverse()[i + 1] : null;
       const sd = prev ? +(s.smm - prev.smm).toFixed(1) : 0;
       const an = anomDates.has(s.d);
       return /*#__PURE__*/React.createElement("div", {
@@ -8568,7 +8664,7 @@ function FlightDeckV2() {
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '11px 16px',
-          borderBottom: i < INBODY.length - 1 ? `1px solid ${C.grid}` : 'none',
+          borderBottom: i < allScans.length - 1 ? `1px solid ${C.grid}` : 'none',
           background: an ? `${C.down}08` : 'transparent'
         }
       }, /*#__PURE__*/React.createElement("div", {
