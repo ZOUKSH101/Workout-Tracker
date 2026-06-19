@@ -8620,7 +8620,7 @@ function FlightDeckV2() {
       bottom: 0,
       left: 0,
       right: 0,
-      padding: '0 12px 4px',
+      padding: '0 12px 12px',
       display: 'flex',
       justifyContent: 'center',
       pointerEvents: 'none',
