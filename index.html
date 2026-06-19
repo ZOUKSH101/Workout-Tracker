@@ -34,14 +34,11 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="./recharts-bundle.js"></script>
-  <script src="./app.js?v=2.6.1"></script>
+  <script src="./app.js?v=2.6.2"></script>
 
   <script>
-    // Clean up any leftover service workers from previous versions
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations()
-        .then(regs => regs.forEach(r => r.unregister()));
-      caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+      navigator.serviceWorker.register('./sw.js');
     }
     ReactDOM.createRoot(document.getElementById('root'))
       .render(React.createElement(window.__App));
