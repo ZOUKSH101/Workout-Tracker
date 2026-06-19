@@ -6233,7 +6233,7 @@ function FlightDeckV2() {
       color: C.dimmer,
       opacity: 0.6
     }
-  }, "v2.6.3")), !inWorkout && /*#__PURE__*/React.createElement("div", {
+  }, "v2.6.4")), !inWorkout && /*#__PURE__*/React.createElement("div", {
     onClick: () => caution.go && setNav(caution.go),
     style: {
       margin: '0 18px 16px',
@@ -7105,7 +7105,7 @@ function FlightDeckV2() {
     }), exPickerOpen && /*#__PURE__*/React.createElement("div", {
       style: {
         position: 'absolute',
-        top: 'calc(100% + 6px)',
+        bottom: 'calc(100% + 6px)',
         left: 0,
         right: 0,
         zIndex: 60,
