@@ -6171,7 +6171,7 @@ function FlightDeckV2() {
       paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
       color: C.text,
       fontFamily: F,
-      paddingBottom: inWorkout ? 0 : 'calc(72px + env(safe-area-inset-bottom, 0px))'
+      paddingBottom: inWorkout ? 0 : 'calc(90px + env(safe-area-inset-bottom, 0px))'
     }
   }, /*#__PURE__*/React.createElement("link", {
     href: "https://fonts.googleapis.com/css2?family=B612+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap",
