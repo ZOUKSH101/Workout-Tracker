@@ -6168,7 +6168,7 @@ function FlightDeckV2() {
     style: {
       background: `radial-gradient(120% 80% at 50% 0%, ${C.bg2} 0%, ${C.bg} 60%)`,
       minHeight: '100dvh',
-      paddingTop: 32,
+      paddingTop: 20,
       color: C.text,
       fontFamily: F,
       paddingBottom: inWorkout ? 0 : 105
@@ -6209,7 +6209,14 @@ function FlightDeckV2() {
       color: C.dimmer,
       marginTop: 2
     }
-  }, data.totalSessions, " sessions · ", data.dates[0]?.slice(0, 7), " → ", data.dates[data.dates.length - 1]?.slice(0, 7)))), !inWorkout && /*#__PURE__*/React.createElement("div", {
+  }, data.totalSessions, " sessions · ", data.dates[0]?.slice(0, 7), " → ", data.dates[data.dates.length - 1]?.slice(0, 7))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: MONO,
+      fontSize: 11,
+      color: C.dimmer,
+      opacity: 0.6
+    }
+  }, "v2.6")), !inWorkout && /*#__PURE__*/React.createElement("div", {
     onClick: () => caution.go && setNav(caution.go),
     style: {
       margin: '0 18px 16px',
