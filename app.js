@@ -5829,6 +5829,7 @@ function FlightDeckV2() {
   const [userInbody, setUserInbody] = useState([]);
   const [scanFormOpen, setScanFormOpen] = useState(false);
   const [scanForm, setScanForm] = useState({ d: '', wt: '', smm: '', bfm: '', pbf: '', bmi: '', score: '', bmr: '' });
+  const [savedTemplates, setSavedTemplates] = useState([]);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     (async () => {
@@ -5859,6 +5860,13 @@ function FlightDeckV2() {
             uInbody = JSON.parse(ibRaw);
           } catch (e) {}
         }
+        let sTpls = [];
+        const tplRaw = await STORE.get('zsk4-templates');
+        if (tplRaw !== null) {
+          try {
+            sTpls = JSON.parse(tplRaw);
+          } catch (e) {}
+        }
 
         // If parse failed, back up the raw string and don't overwrite
         if (parseFailed) {
@@ -5882,6 +5890,7 @@ function FlightDeckV2() {
         setSavedWorkouts(workouts);
         setInbodyInterval(interval);
         setUserInbody(uInbody);
+        setSavedTemplates(sTpls);
       } catch (e) {/* first launch, no data */}
       setLoaded(true);
     })();
@@ -5898,6 +5907,22 @@ function FlightDeckV2() {
     const updated = [...userInbody, scan];
     setUserInbody(updated);
     await STORE.set('zsk4-inbody', JSON.stringify(updated));
+  };
+  const saveTemplate = async (name, exercises) => {
+    const exists = savedTemplates.find(t => t.name === name);
+    let updated;
+    if (exists) {
+      updated = savedTemplates.map(t => t.name === name ? { ...t, exercises } : t);
+    } else {
+      updated = [...savedTemplates, { name, exercises }];
+    }
+    setSavedTemplates(updated);
+    await STORE.set('zsk4-templates', JSON.stringify(updated));
+  };
+  const deleteTemplate = async name => {
+    const updated = savedTemplates.filter(t => t.name !== name);
+    setSavedTemplates(updated);
+    await STORE.set('zsk4-templates', JSON.stringify(updated));
   };
 
   // Export / import backup — always stamped with DATA_VERSION
@@ -6034,6 +6059,7 @@ function FlightDeckV2() {
   };
   const beginCustom = () => {
     if (!wkName || !wkExs.length) return;
+    saveTemplate(wkName, wkExs);
     beginWorkout({
       name: wkName,
       count: 0,
@@ -6233,7 +6259,7 @@ function FlightDeckV2() {
       color: C.dimmer,
       opacity: 0.6
     }
-  }, "v2.6.4")), !inWorkout && /*#__PURE__*/React.createElement("div", {
+  }, "v2.6.5")), !inWorkout && /*#__PURE__*/React.createElement("div", {
     onClick: () => caution.go && setNav(caution.go),
     style: {
       margin: '0 18px 16px',
@@ -7031,14 +7057,39 @@ function FlightDeckV2() {
         gap: 10,
         marginBottom: 24
       }
-    }, data.templates.map(t => /*#__PURE__*/React.createElement(Card, {
+    }, (() => {
+      const histNames = new Set(data.templates.map(t => t.name));
+      const saved = savedTemplates.filter(t => !histNames.has(t.name)).map(t => ({
+        name: t.name,
+        count: 0,
+        lastDate: null,
+        exercises: t.exercises.map(n => ({ name: n, lastWt: 0, lastRp: 10 })),
+        isCustom: true
+      }));
+      return [...data.templates, ...saved];
+    })().map(t => /*#__PURE__*/React.createElement(Card, {
       key: t.name,
       onClick: () => beginWorkout(t),
       style: {
         padding: '16px 15px',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        position: 'relative'
       }
-    }, /*#__PURE__*/React.createElement("div", {
+    }, t.isCustom && /*#__PURE__*/React.createElement("button", {
+      onClick: e => { e.stopPropagation(); deleteTemplate(t.name); },
+      style: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        background: 'none',
+        border: 'none',
+        color: C.dimmer,
+        fontFamily: MONO,
+        fontSize: 14,
+        cursor: 'pointer',
+        padding: '2px 6px'
+      }
+    }, "×"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: F,
         fontSize: 15,
@@ -7058,7 +7109,7 @@ function FlightDeckV2() {
         color: C.dimmer,
         marginTop: 2
       }
-    }, t.count, "× · ", t.lastDate ? fmt(t.lastDate) : '—')))), /*#__PURE__*/React.createElement(SectionLabel, null, "New Template"), /*#__PURE__*/React.createElement(Card, {
+    }, t.count ? `${t.count}× · ` : 'Saved · ', t.lastDate ? fmt(t.lastDate) : '—')))), /*#__PURE__*/React.createElement(SectionLabel, null, "New Template"), /*#__PURE__*/React.createElement(Card, {
       style: {
         padding: 16
       }
