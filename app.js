@@ -6168,10 +6168,10 @@ function FlightDeckV2() {
     style: {
       background: `radial-gradient(120% 80% at 50% 0%, ${C.bg2} 0%, ${C.bg} 60%)`,
       minHeight: '100dvh',
-      paddingTop: 16,
+      paddingTop: 32,
       color: C.text,
       fontFamily: F,
-      paddingBottom: inWorkout ? 0 : 90
+      paddingBottom: inWorkout ? 0 : 105
     }
   }, /*#__PURE__*/React.createElement("link", {
     href: "https://fonts.googleapis.com/css2?family=B612+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap",
