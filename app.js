@@ -6171,7 +6171,7 @@ function FlightDeckV2() {
       paddingTop: 0,
       color: C.text,
       fontFamily: F,
-      paddingBottom: inWorkout ? 0 : 90
+      paddingBottom: inWorkout ? 0 : 'calc(90px + env(safe-area-inset-bottom, 0px))'
     }
   }, /*#__PURE__*/React.createElement("link", {
     href: "https://fonts.googleapis.com/css2?family=B612+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap",
@@ -8613,7 +8613,7 @@ function FlightDeckV2() {
       bottom: 0,
       left: 0,
       right: 0,
-      padding: '0 12px 10px',
+      padding: '0 12px calc(10px + env(safe-area-inset-bottom, 0px))',
       display: 'flex',
       justifyContent: 'center',
       pointerEvents: 'none',
