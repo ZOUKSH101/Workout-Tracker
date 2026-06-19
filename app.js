@@ -6259,7 +6259,7 @@ function FlightDeckV2() {
       color: C.dimmer,
       opacity: 0.6
     }
-  }, "v2.6.5")), !inWorkout && /*#__PURE__*/React.createElement("div", {
+  }, "v2.6.6")), !inWorkout && /*#__PURE__*/React.createElement("div", {
     onClick: () => caution.go && setNav(caution.go),
     style: {
       margin: '0 18px 16px',
@@ -6855,6 +6855,7 @@ function FlightDeckV2() {
         height: 200
       }
     }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+      key: `wt-${defEx}-${pts.length}`,
       width: "100%",
       height: "100%"
     }, /*#__PURE__*/React.createElement(LineChart, {
@@ -6943,6 +6944,7 @@ function FlightDeckV2() {
         height: 150
       }
     }, /*#__PURE__*/React.createElement(ResponsiveContainer, {
+      key: `vol-${defEx}-${pts.length}`,
       width: "100%",
       height: "100%"
     }, /*#__PURE__*/React.createElement(BarChart, {
