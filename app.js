@@ -6188,18 +6188,7 @@ function FlightDeckV2() {
         input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
         body{margin:0}
-      `), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: '#ff3b30',
-      color: '#fff',
-      textAlign: 'center',
-      padding: '8px',
-      fontFamily: F,
-      fontSize: 13,
-      fontWeight: 700,
-      letterSpacing: '0.05em'
-    }
-  }, "BUILD CHECK — v3afaeee"), !inWorkout && /*#__PURE__*/React.createElement("div", {
+      `), !inWorkout && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '18px 18px 10px',
       display: 'flex',
