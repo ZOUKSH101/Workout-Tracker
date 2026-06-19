@@ -6216,7 +6216,7 @@ function FlightDeckV2() {
       color: C.dimmer,
       opacity: 0.6
     }
-  }, "v2.6")), !inWorkout && /*#__PURE__*/React.createElement("div", {
+  }, "v2.6.1")), !inWorkout && /*#__PURE__*/React.createElement("div", {
     onClick: () => caution.go && setNav(caution.go),
     style: {
       margin: '0 18px 16px',
